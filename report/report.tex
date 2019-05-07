@@ -1,0 +1,236 @@
+
+\documentclass[12pt]{article}
+
+\usepackage{graphicx}
+\usepackage{paralist}
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{hhline}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{multicol}
+
+\oddsidemargin 0mm
+\evensidemargin 0mm
+\textwidth 160mm
+\textheight 200mm
+\renewcommand\baselinestretch{1.0}
+
+\pagestyle {plain}
+\pagenumbering{arabic}
+
+\newcounter{stepnum}
+
+%% Comments
+
+\usepackage{color}
+
+\newif\ifcomments\commentstrue
+
+\ifcomments
+\newcommand{\authornote}[3]{\textcolor{#1}{[#3 ---#2]}}
+\newcommand{\todo}[1]{\textcolor{red}{[TODO: #1]}}
+\else
+\newcommand{\authornote}[3]{}
+\newcommand{\todo}[1]{}
+\fi
+
+\newcommand{\wss}[1]{\authornote{blue}{SS}{#1}}
+
+\title{Assignment 4 Specification}
+\author{SFWR ENG 2AA4}
+
+\begin {document}
+
+\maketitle
+
+\noindent This Module Interface Specification (MIS) document contains modules, types and methods for implementing the game state of 
+a game of FreeCell solitaire. The game involves a standard 52-card deck of cards shuffled into 8 piles called Tableau cascades, four 
+having 7 cards each and four having 6 cards each at the beginning. The player has 4 FreeCells where they may choose to place any 
+card as part of their moves. Tableaux can be built by placing alternately-coloured cards of descending suits on top of one another. 
+The goal is to fill all four HomeCells, each stacked from Ace to King of the four different suits. Throughout this document, each of these
+will be referred to as a different type of ``cell'', following naming 
+conventions from the following gameboard visualization from http://www.solitairecity.com/Help/FreeCell.shtml:
+\begin{center}
+
+\end{center}
+
+\newpage
+
+\section* {Life Module}
+
+\subsection*{Template Module}
+
+Life
+
+\subsection* {Uses}
+
+N/A
+
+\subsection* {Syntax}
+
+\subsubsection* {Exported Access Programs}
+
+\begin{tabular}{| l | l | l | l |}
+\hline
+\textbf{Routine name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions}\\
+\hline
+Life & String & Life & runtime\_error, invalid\_argument\\
+\hline
+display  & & &\\
+\hline
+writeOutput & String & &\\
+\hline
+update & & &\\
+\hline
+simulate & $\mathbb{N}$ & &\\
+\hline
+\end{tabular}
+
+\subsection* {Semantics}
+
+\subsubsection* {State Variables}
+
+$L$: seq of seq of bool\\
+
+\subsubsection* {State Invariant}
+
+$|L| = 20 x 20$\\
+
+\subsubsection* {Assumptions \& Design Decisions}
+
+\begin{itemize}
+\item The Life constructor is called before any other
+access routine is called on that instance.
+
+\item The format of the input textfile must be twenty lines of twenty 1s or 0s separated by spaces. 
+
+\item The Life board is sized at 20 by 20. There are no cells beyond the board, so cells on the edges are only neighbouring 5 cells, and cells on the corners are only neighbouring 3 cells.
+
+\end{itemize}
+
+\subsubsection* {Access Routine Semantics}
+
+\noindent Life($txtfile$):
+\begin{itemize}
+\item Initializes the Life board object, and it configures the board, $L$, to the input file $txtfile$. Based on the input file, $txtfile$, $L[i][j]$ is set to true if the character in row $i$ and column $j$ is a 1, and $L[i][j]$ is set to false if the character in row $i$ and column $j$ is a 0.
+
+\item exceptions
+\begin{itemize}
+	\item runtime\_error: If $txtfile$ cannot be found, throw runtime\_error
+	\item invalid\_argument: If $txtfile$ is not in the correct format (too many/little rows or columns, characters not 1 or 0), throw invalid\_argument
+\end{itemize} 
+
+\end{itemize}
+
+\noindent display():
+\begin{itemize} 
+\item Output to console a visual reprentation of the Life board. Format is similar to the input textfile, but with a filled square instead of a 1 and an empty square instead of a 0.
+
+\end{itemize}
+
+
+\noindent writeOutput($outfile$):
+\begin{itemize}
+\item Creates a textfile with name $outfile$ of the current state of the Life board. Format of $outfile$ follows the same format as input files.
+
+\end{itemize}
+
+\noindent update():
+\begin{itemize}
+\item Updates the entire Life board after one round of life. 
+\begin{itemize}
+	\item Each boolean or 'cell' in the board should evaluated based on its current state and the number of 'neighbours' it has to determine its next state. 
+	\item A cell is a neighbour to another cell if it alive and adjacent or diagonal to the cell. A cell is 'alive' if it is true, and it is 'dead' if it is false. 
+	\item A cell that is alive will only stay alive in the next round if it has 2 or 3 neighbours, otherwise it dies. A cell that is dead will become alive in the next round only if it has 3 neighbours.  
+\end{itemize}
+
+\begin{tabular}{|p{2.5cm}|p{5cm}|l|}
+\hhline{|-|-|-|}
+$L[i][j] = \mbox{true}$ & $neighbours(L[i][j]) = 2 || 3$ & L[i][j] := true \\
+\hhline{|~|-|-|}
+& $neighbours(L[i][j]) \neq 2 || 3 $ & L[i][j] := false  \\
+\hhline{|~|-|-|}
+$L[i][j] = \mbox{false}$ & $neightbours(L[i][j]) = 3$ & L[i][j] := true \\
+\hhline{|~|-|-|}
+& $neightbours(L[i][j]) \neq 3$ & L[i][j] := false  \\
+\hhline{|~|-|-|}
+\end{tabular}
+
+\end{itemize}
+
+\noindent simulate($n$):
+\begin{itemize}
+\item Calls update() an $n$ amount of times to simulate rounds. 
+
+\end{itemize}
+
+\subsection*{Local Functions}
+
+\noindent readInput: $\rm String$\\
+\noindent readInput($infile$):
+\begin{itemize}
+	\item Configures the board $L$ to the input file. Based on the input file, $txtfile$, $L[i][j]$ is set to true if the character in row $i$ and column $j$ is a 1, and $L[i][j]$ is set to false if the character in row $i$ and column $j$ is a 0. This local function is used in the Life constructor when initializing the Life object, and it is used in update to read and configure from the output file.
+\end{itemize}
+
+\noindent inBoard: $\rm \mathbb{N} \times \mathbb{N} \rightarrow bool$\\
+\noindent inBoard($x, y$):
+\begin{itemize}
+	\item Returns true if $L[x][y]$ is a valid position (within row and column 1 to 20) on the board, and false if it is not a valid position. This local function is used in neighbours to ensure positions outside of the board are not considered.
+\end{itemize}
+
+\noindent neighbours: $\rm \mathbb{N} \times \mathbb{N} \rightarrow \mathbb{N}$\\
+\noindent neighbours($x, y$):
+\begin{itemize}
+	\item Returns the number of neighbours the cell at $L[x][y]$ has. If there is a cell that is alive and adjacent or diagonal to the cell, then it is a neighbour. 
+\end{itemize}
+
+
+\noindent updateCell: $\rm \mathbb{N} \times \mathbb{N} \times bool \rightarrow bool$\\
+\noindent updateCell($x, y, s$):
+\begin{itemize}
+	\item Returns the next state of the cell $L[x][y]$. $s$ is the current state of $L[x][y]$.
+
+\begin{tabular}{|p{2.5cm}|p{5cm}|l|}
+\hhline{|-|-|-|}
+$s = \mbox{true}$ & $neighbours(L[x][y]) = 2 || 3$ & output = true \\
+\hhline{|~|-|-|}
+& $neighbours(L[x][y]) \neq 2 || 3 $ & output = false  \\
+\hhline{|~|-|-|}
+$s = \mbox{false}$ & $neightbours(L[x][y]) = 3$ & output = true \\
+\hhline{|~|-|-|}
+& $neightbours(L[x][y]) \neq 3$ & output = false  \\
+\hhline{|~|-|-|}
+\end{tabular}
+\end{itemize}
+
+\newpage
+
+\section* {Critique}
+\subsection*{Consistency}
+
+The Life module is completely consistent in following the rules of the game of life. There are exceptions in place in the readInput function to ensure that the input files follow suit of the Life board. The update function follows strict rules to determine whether a cell will be dead or alive in the next round, so there is no room for the output to be incorrect.  
+
+\subsection*{Essentiality}
+
+My design is fairly essential, however the update function could be done differently. The update function currently determines the next state and creates an output text file, then it updates the board using readInput from that formed output file. This is somewhat unnecessary as it creates an auxillary file that remains after the function call. Using a temporary 2D array to represent the new board state would be preferably as the temporay board will be gone after the function call.
+
+\subsection*{Generality}
+
+I believe that the Life module is somewhat general. The readInput function takes in an input file and configures the board to it. Since this function is general, it is able to be used in multiple functions (the constructor and the update function). However, these functions are made specific to a square board of size 20 by 20. To make it more general, I could have used variables to reprent the number of rows and columns. Also, I believe using a 2D array of integers over booleans would have made my design even more general by allowing the option for more than 2 states of cells. 
+
+\subsection*{Minimality}
+
+I think that my design is quite minimal since it only involves one module. Each public function represents one task that the Life board can do, and there are a few local functions, like readInput, which make things simpler by avoiding repetition.
+
+\subsection*{Cohesion}
+
+This design is very cohesive since it just consists of one module. The functions work together seemlessly to produce the functionality of the Life board. For example, the readInput function is entwined in the update function to read the output function it creates. 
+
+
+\subsection*{Information Hiding}
+
+In terms of information hiding, everything is hidden from the user. The only state variable is the 2D array of boolean which represents the board, and this is inaccessible. Everything else that is accessible to the user is meant to be, such as the output textfiles and the display of the board. 
+
+\end{document}
+
